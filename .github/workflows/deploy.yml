@@ -8,6 +8,7 @@ jobs:
         steps:
             - name: checkout 
               run: actions/checkout@v5
+
             - name: ssh setup
               run: |
                 mkdir -p ~/.ssh
@@ -15,6 +16,7 @@ jobs:
                 chmod 400 ~/.ssh/privatekey
                 ssh-keyscan -H ${{secrets.SERVER1}} >> ~/.ssh/known_hosts
                 ssh-keyscan -H ${{secrets.SERVER2}} >> ~/.ssh/known_hosts
+                
             - name: index.html uploaden
               run: |
                 scp -i ~/.ssh/privatekey frontend/index.html ubuntu@${{secrets.SERVER1}}:/home/ubuntu/index.html
