@@ -1,10 +1,23 @@
-name: ErterWorkflow
+name: Up-Load
 
 on: push
 
 jobs:
-    meinErsterJob:
+    deploy:
         runs-on: ubuntu-latest
         steps:
-            - name: meinErsterSchritt
-              run: echo "Hello World!"
+            - name: checkout 
+              run: actions/checkout@v5
+            - name: ssh setup
+              run: |
+                mkdir -p ~/.ssh
+                echo "${{secrets.SSHKEY}}" > ~/.ssh/privatekey
+                chmod 400 ~/.ssh/privatekey
+                ssh-keyscan -H ${{secrets.SERVER1}} >> ~/.ssh/known_hosts
+                ssh-keyscan -H ${{secrets.SERVER2}} >> ~/.ssh/known_hosts
+            - name: index.html uploaden
+              run: |
+                scp -i ~/.ssh/privatekey frontend/index.html ubuntu@${{secrets.SERVER1}}:/home/ubuntu/index.html
+                scp -i ~/.ssh/privatekey frontend/index.html ubuntu@${{secrets.SERVER2}}:/home/ubuntu/index.html
+                ssh -i ~/.ssh/privatekey ubuntu${{secrets.SERVER1}} "sudo cp /home/ubuntu/index.html /var/www/html/index.html"
+                ssh -i ~/.ssh/privatekey ubuntu${{secrets.SERVER2}} "sudo cp /home/ubuntu/index.html /var/www/html/index.html"
